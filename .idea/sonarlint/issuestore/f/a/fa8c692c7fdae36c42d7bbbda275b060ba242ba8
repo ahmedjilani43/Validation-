@@ -1,0 +1,12 @@
+
+U
+java:S1854/"?Remove this useless assignment to local variable "reservation".(­ια
+F
+java:S1481/"0Remove this unused "reservation" local variable.(­ια
+q
+java:S2159Z"VRemove this call to "equals"; comparisons between unrelated types always return false.(Ελÿÿÿÿÿ
+Q
+java:S1128
+"6Remove this unused import 'lombok.AllArgsConstructor'.(΄Ύφωÿÿÿÿ
+S
+java:S1128"8Remove this unused import 'org.modelmapper.ModelMapper'.(σΏΤϊÿÿÿÿ

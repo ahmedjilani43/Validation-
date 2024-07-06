@@ -1,0 +1,5 @@
+
+g
+java:S6204"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(¬ÜÄ
+Y
+java:S1128	"CRemove this unused import 'org.springframework.stereotype.Service'.(¼º¡Ú

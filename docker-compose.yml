@@ -1,0 +1,95 @@
+version: "3.9"
+services:
+  eureka-server:
+    container_name: eureka-server
+    hostname: eureka-server
+    build:
+      context: ./eurekaServer
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://192.168.1.9:8761/actuator/health"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  apigateway:
+    container_name: apigateway
+    hostname: apigateway
+    build:
+      context: ./apigateway
+    ports:
+      - "8081:8081"
+    environment:
+      - EUREKA_SERVICE_URL=http://eureka-server:8761/eureka
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+
+  db-reservations:
+    container_name: db-reservations
+    hostname: db-reservations
+    image: mysql/mysql-server:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_ROOT_HOST=%
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3307:3307"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  reservations:
+    container_name: reservations
+    hostname: reservations
+    build:
+      context: ./Reservations_MS
+    ports:
+      - "8090:8090"
+    environment:
+      - EUREKA_SERVICE_URL=http://eureka-server:8761/eureka
+      - TICKETS_MYSQL_URL=jdbc:mysql://db-tickets:3307/db_reservations?createDatabaseIfNotExist=true&useSSL=false&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+      - TICKETS_MYSQL_USER=root
+      - TICKETS_MYSQL_PASSWORD=
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      db-reservations:
+        condition: service_healthy
+  events:
+    container_name: events
+    hostname: events
+    build:
+      context: ./event-planner-microservice
+    ports:
+      - "8088:8088"
+    environment:
+      - EUREKA_SERVICE_URL=http://eureka-server:8761/eureka
+      - TICKETS_MYSQL_URL=jdbc:mysql://db-tickets:3306/tickets?createDatabaseIfNotExist=true&useSSL=false&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+      - TICKETS_MYSQL_USER=root
+      - TICKETS_MYSQL_PASSWORD=root
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+
+  #  db-nest:
+  #    hostname: db-nest
+  #    image: bitnami/mongodb:latest
+  #    restart: always
+  #    environment:
+  #      - MONGODB_USERNAME=nest
+  #      - MONGODB_PASSWORD=nest
+  #      - MONGODB_DATABASE=nest
+  #      - MONGODB_ROOT_PASSWORD=nest
+  #    ports:
+  #      - "27019:27017"
+  #    healthcheck:
+  #      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+  #      interval: 3s
+  #      timeout: 5s
+  #      retries: 30
+  #      start_period: 5s
+    #     - mongo_db:/data/db
